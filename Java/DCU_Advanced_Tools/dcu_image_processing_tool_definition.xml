@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dcu_image_process_def> 
+
+	<video_stream_name comment='Identification name of the viseo stream, do not use any special characters.'>camera_64</video_stream_name>
+	
+
+	
+	<debug comment='If yes, displays debugging messages in terminal. '>yes</debug>
+	
+	
+	<sampling_msec comment='Expected sampling time in miliseconds.'>100</sampling_msec>
+	
+	<rtudp_local_cfunid_out comment=' Streaming data into DCU. Server function ID for remote virtual output via UDP stream.'>1120</rtudp_local_cfunid_out>
+	<output id='0'>Button 0</output>
+	<output id='1'>Button 1</output>
+	<output id='2'>Button 2</output>
+	<output id='3'>Button 3</output>
+	<output id='4'>Button 4</output>
+	<output id='5'>Button 5</output>
+	<output id='6'>Button 6</output>
+	<output id='7'>Button 7</output>
+	<output id='8'>Button 8</output>
+	<output id='9'>Button 9</output>
+	<output id='10'>Hat Switch</output>
+	<output id='11'>X Axis</output>
+	<output id='12'>Y Axis</output>
+	<output id='13'>Z Axis</output>
+	<output id='14'>X Rotation</output>
+	<output id='15'>Y Rotation</output>
+	
+	
+	
+
+
+	
+</dcu_image_process_def>

@@ -1,0 +1,5 @@
+0	cfn:: Bin.Zero
+1	cfn:: Real.Zero
+2	cfn:: FROM_Advanced_Image_Proc RTUDP_Input1200
+3	cfn:: TO_Advanced_Image_Proc RTUDP_Output2200
+4	cfn:: Real.Zero

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="mysql-connector-java-8.0.13/mysql-connector-java-8.0.13.jar"/>
+	<classpathentry kind="lib" path="javaCV-1.5.10/ffmpeg.jar"/>
+	<classpathentry kind="lib" path="javaCV-1.5.10/javacpp.jar"/>
+	<classpathentry kind="lib" path="javaCV-1.5.10/javacv.jar"/>
+	<classpathentry kind="lib" path="javaCV-1.5.10/ffmpeg-windows-x86_64.jar"/>
+	<classpathentry kind="lib" path="javaCV-1.5.10/javacpp-windows-x86_64.jar"/>
+	<classpathentry kind="lib" path="javaCV-1.5.10/javacpp-platform.jar"/>
+	<classpathentry kind="lib" path="javaCV-1.5.10/javacv-platform.jar"/>
+	<classpathentry kind="lib" path="javaCV-1.5.10/ffmpeg-linux-x86_64.jar"/>
+	<classpathentry kind="lib" path="javaCV-1.5.10/javacpp-linux-x86_64.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
