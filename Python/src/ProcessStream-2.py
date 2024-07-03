@@ -215,7 +215,7 @@ def analyze_img_opt(frame):
         locObjX, locObjY = bestX, bestY
 
         # Update the stored object image with the best match found
-        if bestError > 0:
+        if bestError < 1000000:
             locObjImage = frame[locObjY: locObjY + locObjHeight, locObjX: locObjX + locObjWidth].copy()
 
 
