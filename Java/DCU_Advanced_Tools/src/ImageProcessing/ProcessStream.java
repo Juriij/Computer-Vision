@@ -566,6 +566,7 @@ public class ProcessStream {
 	
 	
 	private static void convertFrame(Frame frame){
+
 		ByteBuffer buffer = (ByteBuffer) frame.image[0].position(0);
 
         if(pixels == null)
