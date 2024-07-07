@@ -11,7 +11,7 @@ def grab_frame(stream):             # -> only for built-in camera video stream
     ret, frame = stream.read()
        
     if not ret:
-        sys.exit("Error: Could not read frame.")
+        print("Error: Could not read frame.")
      
     return frame
 
@@ -168,6 +168,9 @@ def analyze_img(frame):
 
 
 
+
+
+
 def analyze_img_opt(frame):
     global initial_run, locObjY, locObjX, locObjMaxDist, locObjHeight, locObjWidth, locObjImage
 
@@ -261,6 +264,7 @@ running = True
 cap = cv2.VideoCapture(0)
 
 
+
 # While Loop
 
 while running:                         
@@ -274,10 +278,16 @@ while running:
         pixels = pixels.flatten()
     np.copyto(pixels, buffer.contents)
 
-
+    start = time.time()
     analyze_img_opt(frame)
+    end = time.time()
+
+    print(f'{round(1/(end-start), 1)} frames per second')
+
+
 
     cv2.imshow("Image", frame)
+    
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
