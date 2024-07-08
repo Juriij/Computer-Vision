@@ -169,109 +169,13 @@ def analyze_img(frame):
 
 
 
-################# GPU ACCELERATION ATTEMPT ####################################
+################ GPU ACCELERATION ATTEMPT ####################################
 
 
-# def analyze_img_opt(frame):
-#     global initial_run, locObjY, locObjX, locObjMaxDist, locObjHeight, locObjWidth, locObjImage
-
-#     frame = cp.asarray(frame)  # move the frame to gpu
-
-#     ######## initial run ########
-
-#     if initial_run:
-#         locObjMaxDist = 40
-#         locObjHeight = 60
-#         locObjWidth = 60
-#         # Initial setup: Center the object in the frame
-#         locObjY = (frame.shape[0] // 2) - (locObjHeight // 2)
-#         locObjX = (frame.shape[1] // 2) - (locObjWidth // 2)
-        
-#         # Copy the initial object image
-#         locObjImage = frame[locObjY:locObjY + locObjHeight, locObjX:locObjX + locObjWidth].copy()
-
-#         frame = cp.asnumpy(frame)  # move the frame to cpu
-        
-#         initial_run = False
-
-#     ######## initial run ########
-
-
-#     ######## runs constantly ########
-
-#     else:
-#         bestX, bestY = locObjX, locObjY
-#         bestError = float('inf')
-#         frame_height, frame_width, _ = frame.shape
-
-#         # Define search area boundaries
-#         startY = max(locObjY - locObjMaxDist, 0)
-#         endY = min(locObjY + locObjMaxDist, frame_height - locObjHeight)
-#         startX = max(locObjX - locObjMaxDist, 0)
-#         endX = min(locObjX + locObjMaxDist, frame_width - locObjWidth)
-
-#         # Search for the best match within the allowed movement area
-#         for y in range(startY, endY + 1):
-#             for x in range(startX, endX + 1):
-#                 current_patch = frame[y: y + locObjHeight, x: x + locObjWidth]
-#                 error = cp.sum(cp.abs(current_patch - locObjImage))
-
-#                 if error < bestError:
-#                     bestError = error
-#                     bestX, bestY = x, y
-
-#         locObjX, locObjY = bestX, bestY
-
-#         # Update the stored object image with the best match found
-#         if bestError < 1000000:
-#             locObjImage = frame[locObjY: locObjY + locObjHeight, locObjX: locObjX + locObjWidth].copy()
-
-
-#     ######## runs constantly ########
-
-
-
-#     ######## draw the central object ###########
-    
-#     frame = cp.asnumpy(frame)  # move the frame to cpu
-
-#     yellow = (0, 255, 255)  
-
-#     cv2.rectangle(frame, (locObjX, locObjY), (locObjX + locObjWidth, locObjY + locObjHeight), yellow, 2)
-
-#     # Prepare the text
-#     # posS = f"x={rtudp_output[0]}, y={rtudp_output[1]}"  # Replace rtudp_output with actual values
-#     posS = "text"
-
-
-#     font = cv2.FONT_HERSHEY_SIMPLEX  
-#     font_scale = 0.5  
-#     font_thickness = 1 
-
-#     # Calculate text size to adjust position if necessary
-#     (text_width, text_height), baseline = cv2.getTextSize(posS, font, font_scale, font_thickness)
-
-#     # Draw text
-#     cv2.putText(frame, posS, (locObjX + locObjWidth, locObjY + text_height), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-
-
-#     ######## draw the central object ###########
-
-
-
-
-################# GPU ACCELERATION ATTEMPT ####################################
-
-
-
-
-
-
-
-
-
-def analyze_img_opt(frame):
+def analyze_img_gpu(frame):
     global initial_run, locObjY, locObjX, locObjMaxDist, locObjHeight, locObjWidth, locObjImage
+
+    frame = cp.asarray(frame)  # move the frame to gpu
 
     ######## initial run ########
 
@@ -285,6 +189,102 @@ def analyze_img_opt(frame):
         
         # Copy the initial object image
         locObjImage = frame[locObjY:locObjY + locObjHeight, locObjX:locObjX + locObjWidth].copy()
+
+        frame = cp.asnumpy(frame)  # move the frame to cpu
+        
+        initial_run = False
+
+    ######## initial run ########
+
+
+    ######## runs constantly ########
+
+    else:
+        bestX, bestY = locObjX, locObjY
+        bestError = float('inf')
+        frame_height, frame_width, _ = frame.shape
+
+        # Define search area boundaries
+        startY = max(locObjY - locObjMaxDist, 0)
+        endY = min(locObjY + locObjMaxDist, frame_height - locObjHeight)
+        startX = max(locObjX - locObjMaxDist, 0)
+        endX = min(locObjX + locObjMaxDist, frame_width - locObjWidth)
+
+        # Search for the best match within the allowed movement area
+        for y in range(startY, endY + 1):
+            for x in range(startX, endX + 1):
+                current_patch = frame[y: y + locObjHeight, x: x + locObjWidth]
+                error = cp.sum(cp.abs(current_patch - locObjImage))
+
+                if error < bestError:
+                    bestError = error
+                    bestX, bestY = x, y
+
+        locObjX, locObjY = bestX, bestY
+
+        # Update the stored object image with the best match found
+        if bestError < 1000000:
+            locObjImage = frame[locObjY: locObjY + locObjHeight, locObjX: locObjX + locObjWidth].copy()
+
+
+    ######## runs constantly ########
+
+
+
+    ######## draw the central object ###########
+    
+    frame = cp.asnumpy(frame)  # move the frame to cpu
+
+    yellow = (0, 255, 255)  
+
+    cv2.rectangle(frame, (locObjX, locObjY), (locObjX + locObjWidth, locObjY + locObjHeight), yellow, 2)
+
+    # Prepare the text
+    # posS = f"x={rtudp_output[0]}, y={rtudp_output[1]}"  # Replace rtudp_output with actual values
+    posS = "text"
+
+
+    font = cv2.FONT_HERSHEY_SIMPLEX  
+    font_scale = 0.5  
+    font_thickness = 1 
+
+    # Calculate text size to adjust position if necessary
+    (text_width, text_height), baseline = cv2.getTextSize(posS, font, font_scale, font_thickness)
+
+    # Draw text
+    cv2.putText(frame, posS, (locObjX + locObjWidth, locObjY + text_height), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
+
+
+    ######## draw the central object ###########
+
+
+
+
+################ GPU ACCELERATION ATTEMPT ####################################
+
+
+
+
+
+
+
+
+
+def analyze_img_manual(frame):
+    global initial_run, locObjY, locObjX, locObjMaxDist, locObjHeight, locObjWidth, locObjImage
+
+    ######## initial run ########
+
+    if initial_run:
+        locObjMaxDist = 40
+        locObjHeight = 60
+        locObjWidth = 60
+        # Initial setup: Center the object in the frame
+        locObjY = (frame.shape[0] // 2) - (locObjHeight // 2)
+        locObjX = (frame.shape[1] // 2) - (locObjWidth // 2)
+        
+        # Copy the initial object image
+        locObjImage = frame[locObjY:locObjY + locObjHeight, locObjX:locObjX + locObjWidth]
         
         initial_run = False
 
@@ -314,11 +314,11 @@ def analyze_img_opt(frame):
                     bestError = error
                     bestX, bestY = x, y
 
-        locObjX, locObjY = bestX, bestY
 
         # Update the stored object image with the best match found
         if bestError < 1000000:
-            locObjImage = frame[locObjY: locObjY + locObjHeight, locObjX: locObjX + locObjWidth].copy()
+            locObjX, locObjY = bestX, bestY
+            locObjImage = frame[locObjY: locObjY + locObjHeight, locObjX: locObjX + locObjWidth]
 
 
     ######## runs constantly ########
@@ -354,6 +354,67 @@ def analyze_img_opt(frame):
 
 
 
+
+
+
+
+
+def analyze_img_opencv(frame):
+    global initial_run, locObjY, locObjX, locObjHeight, locObjWidth, locObjImage, match_method
+
+    if initial_run:
+        locObjHeight = 60
+        locObjWidth = 60
+        # Initial setup: Center the object in the frame
+        locObjY = (frame.shape[0] // 2) - (locObjHeight // 2)
+        locObjX = (frame.shape[1] // 2) - (locObjWidth // 2)
+        
+        # Copy the initial object image (template)
+        locObjImage = frame[locObjY:locObjY + locObjHeight, locObjX:locObjX + locObjWidth]
+        
+        # Choose the matching method
+        match_method = cv2.TM_CCOEFF_NORMED
+
+        yellow = (0, 255, 255)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.5
+        font_thickness = 1
+        
+        initial_run = False
+
+    else:
+        # Apply template matching
+        result = cv2.matchTemplate(frame, locObjImage, match_method)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+        # Update the position of the object
+        if match_method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+            locObjX, locObjY = min_loc
+        else:
+            locObjX, locObjY = max_loc
+
+
+
+    # Draw the rectangle around the tracked object
+
+    cv2.rectangle(frame, (locObjX, locObjY), (locObjX + locObjWidth, locObjY + locObjHeight), yellow, 2)
+    
+    # Prepare the text
+    posS = "text"
+
+
+    # Calculate text size to adjust position if necessary
+    (text_width, text_height), baseline = cv2.getTextSize(posS, font, font_scale, font_thickness)
+
+    # Draw text
+    cv2.putText(frame, posS, (locObjX + locObjWidth, locObjY + text_height), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
+
+
+
+
+
+
+
 # Variable Establishment
 
 initial_run = True
@@ -377,11 +438,12 @@ while running:
 
     start = time.time()
 
-    analyze_img_opt(frame)
+    analyze_img_opencv(frame)
 
     end = time.time()
 
-    print(f'{round(1/(end-start), 1)} frames per second')
+    if (end-start) != 0.0:
+        print(f'{round(1/(end-start), 1)} frames per second')
 
 
 
