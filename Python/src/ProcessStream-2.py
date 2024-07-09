@@ -375,10 +375,6 @@ def analyze_img_opencv(frame):
         # Choose the matching method
         match_method = cv2.TM_CCOEFF_NORMED
 
-        yellow = (0, 255, 255)
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 0.5
-        font_thickness = 1
         
         initial_run = False
 
@@ -396,6 +392,10 @@ def analyze_img_opencv(frame):
 
 
     # Draw the rectangle around the tracked object
+    yellow = (0, 255, 255)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.5
+    font_thickness = 1
 
     cv2.rectangle(frame, (locObjX, locObjY), (locObjX + locObjWidth, locObjY + locObjHeight), yellow, 2)
     
