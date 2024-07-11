@@ -360,7 +360,8 @@ def analyze_img_manual(frame):
 
 
 def analyze_img_opencv(frame):
-    global initial_run, locObjY, locObjX, locObjHeight, locObjWidth, locObjImage, match_method
+    global initial_run, locObjY, locObjX, locObjHeight, locObjWidth, locObjImage, match_method, yellow, font, font_scale, font_thickness 
+
 
     if initial_run:
         locObjHeight = 60
