@@ -361,7 +361,8 @@ def analyze_img_manual(frame):
 
 def analyze_img_opencv(frame, frame_receival):
     global initial_run, locObjY, locObjX, locObjHeight, locObjWidth, locObjImage, match_method, yellow, font, font_scale, font_thickness, deviationX, deviationY, startX, startY
-
+    
+    start = time.time()
 
     if initial_run:
         locObjHeight = 60
@@ -394,7 +395,10 @@ def analyze_img_opencv(frame, frame_receival):
         else:
             locObjX, locObjY = max_loc
 
+    
+    end = time.time()
 
+    analysis_time = end - start
 
     # Draw the rectangle around the tracked object and basic info
     yellow = (0, 255, 255)
@@ -413,7 +417,7 @@ def analyze_img_opencv(frame, frame_receival):
     # Draw text
     cv2.putText(frame, posS, (locObjX + locObjWidth, locObjY + text_height), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
     cv2.putText(frame, f'frame grab: {int(frame_receival*1000)} ms', (0, int(frame.shape[0]*0.9)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-
+    cv2.putText(frame, f'analysis time: {int(analysis_time*1000)} ms', (0, int(frame.shape[0]*0.95)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
 
 
 
@@ -429,7 +433,7 @@ cap = cv2.VideoCapture(0)
 
 # While Loop
 
-while running:          
+while running:        
 
     start = time.time()    
     frame = grab_frame(cap)
@@ -447,13 +451,8 @@ while running:
     #     pixels = pixels.flatten()
     # np.copyto(pixels, buffer.contents)
 
-    start = time.time()
+    
     analyze_img_opencv(frame, frame_receival)
-    end = time.time()
-
-    if (end-start) != 0.0:
-        print(f'{round(1/(end-start), 1)} frames per second')
-
 
 
     cv2.imshow("Image", frame)
