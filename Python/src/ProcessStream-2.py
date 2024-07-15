@@ -360,15 +360,19 @@ def analyze_img_manual(frame):
 
 
 def analyze_img_opencv(frame):
-    global initial_run, locObjY, locObjX, locObjHeight, locObjWidth, locObjImage, match_method, yellow, font, font_scale, font_thickness 
+    global initial_run, locObjY, locObjX, locObjHeight, locObjWidth, locObjImage, match_method, yellow, font, font_scale, font_thickness, deviationX, deviationY, startX, startY
 
 
     if initial_run:
         locObjHeight = 60
         locObjWidth = 60
         # Initial setup: Center the object in the frame
-        locObjY = (frame.shape[0] // 2) - (locObjHeight // 2)
-        locObjX = (frame.shape[1] // 2) - (locObjWidth // 2)
+        locObjY = startY = (frame.shape[0] // 2) - (locObjHeight // 2)
+        locObjX = startX = (frame.shape[1] // 2) - (locObjWidth // 2)
+
+        # deviation because the variables track how much has object deviated from the center of the screen
+        deviationX = 0 
+        deviationY = 0
         
         # Copy the initial object image (template)
         locObjImage = frame[locObjY:locObjY + locObjHeight, locObjX:locObjX + locObjWidth]
@@ -392,7 +396,7 @@ def analyze_img_opencv(frame):
 
 
 
-    # Draw the rectangle around the tracked object
+    # Draw the rectangle around the tracked object and basic info
     yellow = (0, 255, 255)
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.5
@@ -401,9 +405,8 @@ def analyze_img_opencv(frame):
     cv2.rectangle(frame, (locObjX, locObjY), (locObjX + locObjWidth, locObjY + locObjHeight), yellow, 2)
     
     # Prepare the text
-    posS = "text"
-
-
+    posS = f'[{int(locObjX-startX)}; {int(locObjY-startY)}]'
+    
     # Calculate text size to adjust position if necessary
     (text_width, text_height), baseline = cv2.getTextSize(posS, font, font_scale, font_thickness)
 
