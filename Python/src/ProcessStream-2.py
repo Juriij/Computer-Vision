@@ -416,8 +416,8 @@ def analyze_img_opencv(frame, frame_receival):
 
     # Draw text
     cv2.putText(frame, posS, (locObjX + locObjWidth, locObjY + text_height), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-    cv2.putText(frame, f'frame grab: {int(frame_receival*1000)} ms', (0, int(frame.shape[0]*0.9)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-    cv2.putText(frame, f'analysis time: {int(analysis_time*1000)} ms', (0, int(frame.shape[0]*0.95)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
+    cv2.putText(frame, f'frame grab: {int(frame_receival*1000)} ms', (0, int(frame.shape[0]*0.91)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
+    cv2.putText(frame, f'analysis time: {int(analysis_time*1000)} ms', (0, int(frame.shape[0]*0.96)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
 
 
 
@@ -441,8 +441,6 @@ while running:
 
     frame_receival = end - start
 
-
-
     #### VARIABLE "pixels" for analyze_img()
 
     # buffer = frame.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
@@ -454,9 +452,7 @@ while running:
     
     analyze_img_opencv(frame, frame_receival)
 
-
     cv2.imshow("Image", frame)
-    
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
