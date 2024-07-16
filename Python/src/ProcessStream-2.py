@@ -359,104 +359,132 @@ def analyze_img_manual(frame):
 
 
 
-def analyze_img_opencv(frame, frame_receival):
-    global initial_run, locObjY, locObjX, locObjHeight, locObjWidth, locObjImage, match_method, yellow, font, font_scale, font_thickness, deviationX, deviationY, startX, startY
-    
-    start = time.time()
 
-    if initial_run:
-        locObjHeight = 60
-        locObjWidth = 60
-        # Initial setup: Center the object in the frame
-        locObjY = startY = (frame.shape[0] // 2) - (locObjHeight // 2)
-        locObjX = startX = (frame.shape[1] // 2) - (locObjWidth // 2)
 
-        # deviation because the variables track how much has object deviated from the center of the screen
-        deviationX = 0 
-        deviationY = 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class ObjectTracker:
+    def __init__(self):
+        self.locObjHeight = 60
+        self.locObjWidth = 60
+        self.locObjX = 0
+        self.locObjY = 0
+        self.locObjImage = None
+        self.match_method = cv2.TM_CCOEFF_NORMED
+        self.deviationX = 0
+        self.deviationY = 0
+        self.startX = 0
+        self.startY = 0
+        self.resetX = 0
+        self.resetY = 0
+        self.centerX = 0
+        self.centerY = 0
+
+    def analyze_img(self, frame, frame_receival):
+        start = time.time()
+
+        if self.initial_run:
+            self.locObjY = self.startY = self.resetY
+            self.locObjX = self.startX = self.resetX
+            self.deviationX = 0 
+            self.deviationY = 0
+            self.locObjImage = frame[self.locObjY:self.locObjY + self.locObjHeight, self.locObjX:self.locObjX + self.locObjWidth]
         
-        # Copy the initial object image (template)
-        locObjImage = frame[locObjY:locObjY + locObjHeight, locObjX:locObjX + locObjWidth]
-        
-        # Choose the matching method
-        match_method = cv2.TM_CCOEFF_NORMED
-
-        
-        initial_run = False
-
-    else:
-        # Apply template matching
-        result = cv2.matchTemplate(frame, locObjImage, match_method)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-
-        # Update the position of the object
-        if match_method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
-            locObjX, locObjY = min_loc
         else:
-            locObjX, locObjY = max_loc
+            result = cv2.matchTemplate(frame, self.locObjImage, self.match_method)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+            if self.match_method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+                self.locObjX, self.locObjY = min_loc
+            else:
+                self.locObjX, self.locObjY = max_loc
 
-    
-    end = time.time()
+        end = time.time()
+        analysis_time = end - start
 
-    analysis_time = end - start
+        yellow = (0, 255, 255)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.5
+        font_thickness = 1
 
-    # Draw the rectangle around the tracked object and basic info
-    yellow = (0, 255, 255)
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.5
-    font_thickness = 1
+        cv2.rectangle(frame, (self.locObjX, self.locObjY), (self.locObjX + self.locObjWidth, self.locObjY + self.locObjHeight), yellow, 2)
+        posS = f'[{int(self.locObjX - self.startX)}; {int(self.locObjY - self.startY)}]'
+        (text_width, text_height), baseline = cv2.getTextSize(posS, font, font_scale, font_thickness)
+        cv2.putText(frame, posS, (self.locObjX + self.locObjWidth, self.locObjY + text_height), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
+        cv2.putText(frame, f'frame grab: {int(frame_receival * 1000)} ms', (0, int(frame.shape[0] * 0.91)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
+        cv2.putText(frame, f'analysis time: {int(analysis_time * 1000)} ms', (0, int(frame.shape[0] * 0.96)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
 
-    cv2.rectangle(frame, (locObjX, locObjY), (locObjX + locObjWidth, locObjY + locObjHeight), yellow, 2)
-    
-    # Prepare the text
-    posS = f'[{int(locObjX-startX)}; {int(locObjY-startY)}]'
+        self.initial_run = False
+        
 
-    # Calculate text size to adjust position if necessary
-    (text_width, text_height), baseline = cv2.getTextSize(posS, font, font_scale, font_thickness)
+    def set_click_coords(self, event, x, y, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            print(f'x,y deviation from the center of the screen: [{x - self.centerX}; {y - self.centerY}]')
+            self.initial_run = True
+            self.resetX = x
+            self.resetY = y
 
-    # Draw text
-    cv2.putText(frame, posS, (locObjX + locObjWidth, locObjY + text_height), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-    cv2.putText(frame, f'frame grab: {int(frame_receival*1000)} ms', (0, int(frame.shape[0]*0.91)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-    cv2.putText(frame, f'analysis time: {int(analysis_time*1000)} ms', (0, int(frame.shape[0]*0.96)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-
-
-
-
-
-# Variable Establishment
-
-initial_run = True
-running = True
-cap = cv2.VideoCapture(0)
-
-
-
-# While Loop
-
-while running:        
-
-    start = time.time()    
-    frame = grab_frame(cap)
-    end = time.time()
-
-    frame_receival = end - start
-
-    #### VARIABLE "pixels" for analyze_img()
-
-    # buffer = frame.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
-    # if 'pixels' not in locals():
-    #     pixels = np.zeros_like(frame, dtype=np.int64)
-    #     pixels = pixels.flatten()
-    # np.copyto(pixels, buffer.contents)
-
-    
-    analyze_img_opencv(frame, frame_receival)
-
-    cv2.imshow("Image", frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    def setup(self, frame):
+        self.resetY = self.centerY = (frame.shape[0] // 2) - (self.locObjHeight // 2)
+        self.resetX = self.centerX = (frame.shape[1] // 2) - (self.locObjWidth // 2)
+        self.initial_run = True
 
 
 
-cap.release()
-cv2.destroyAllWindows()
+
+def main():
+    tracker = ObjectTracker()
+
+    cap = cv2.VideoCapture(0)
+    cv2.namedWindow("Camera Stream")
+    cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
+
+    beginning = True
+    running = True
+
+    while running:
+        start = time.time()
+        frame = grab_frame(cap)
+        end = time.time()
+        frame_receival = end - start
+
+        if beginning:
+            tracker.setup(frame)
+            beginning = False
+
+        tracker.analyze_img(frame, frame_receival)
+
+        cv2.imshow("Camera Stream", frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            running = False
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
