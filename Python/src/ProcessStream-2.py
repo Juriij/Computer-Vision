@@ -356,39 +356,6 @@ def analyze_img_manual(frame):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class ObjectTracker:
     def __init__(self):
         self.locObjHeight = 60
@@ -440,7 +407,7 @@ class ObjectTracker:
         cv2.putText(frame, f'analysis time: {int(analysis_time * 1000)} ms', (0, int(frame.shape[0] * 0.96)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
 
         self.initial_run = False
-        
+
 
     def set_click_coords(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
