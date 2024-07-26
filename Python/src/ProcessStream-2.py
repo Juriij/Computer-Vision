@@ -363,7 +363,7 @@ class ObjectTracker:
         self.locObjX = 0
         self.locObjY = 0
         self.locObjImage = None
-        self.match_method = cv2.TM_CCOEFF_NORMED
+        self.match_method = cv2.TM_CCOEFF_NORMED       
         self.deviationX = 0
         self.deviationY = 0
         self.startX = 0
@@ -372,8 +372,10 @@ class ObjectTracker:
         self.resetY = 0
         self.centerX = 0
         self.centerY = 0
+        self.Frame_receival = 0
+        self.Analysis_time = 0
 
-    def analyze_img(self, frame, frame_receival):
+    def analyze_img(self, frame, frame_receival, display_speed):
         start = time.time()
 
         if self.initial_run:
@@ -394,6 +396,11 @@ class ObjectTracker:
         end = time.time()
         analysis_time = end - start
 
+        if display_speed:
+            self.Frame_receival = frame_receival
+            self.Analysis_time = analysis_time
+
+
         yellow = (0, 255, 255)
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = 0.5
@@ -403,8 +410,8 @@ class ObjectTracker:
         posS = f'[{int(self.locObjX - self.startX)}; {int(self.locObjY - self.startY)}]'
         (text_width, text_height), baseline = cv2.getTextSize(posS, font, font_scale, font_thickness)
         cv2.putText(frame, posS, (self.locObjX + self.locObjWidth, self.locObjY + text_height), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-        cv2.putText(frame, f'frame grab: {int(frame_receival * 1000)} ms', (0, int(frame.shape[0] * 0.91)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-        cv2.putText(frame, f'analysis time: {int(analysis_time * 1000)} ms', (0, int(frame.shape[0] * 0.96)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
+        cv2.putText(frame, f'frame grab: {int(self.Frame_receival * 1000)} ms', (0, int(frame.shape[0] * 0.91)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
+        cv2.putText(frame, f'analysis time: {int(self.Analysis_time * 1000)} ms', (0, int(frame.shape[0] * 0.96)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
 
         self.initial_run = False
 
@@ -433,8 +440,16 @@ def main():
 
     beginning = True
     running = True
+    display_speed = False
+    display_START = time.time()
 
     while running:
+
+        display_END = time.time()
+        if (display_END - display_START) >= 1:
+            display_speed = True
+            display_START = time.time()
+
         start = time.time()
         frame = grab_frame(cap)
         end = time.time()
@@ -444,7 +459,9 @@ def main():
             tracker.setup(frame)
             beginning = False
 
-        tracker.analyze_img(frame, frame_receival)
+        tracker.analyze_img(frame, frame_receival, display_speed)
+
+        display_speed = False
 
         cv2.imshow("Camera Stream", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
