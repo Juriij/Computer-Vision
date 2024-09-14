@@ -1,20 +1,24 @@
 import cv2
-import sys
 import time
 import numpy as np
 import cupy as cp
-import ctypes
+import mysql.connector
 
 
 # Functions
 
-def grab_frame(stream):             # -> only for built-in camera video stream
+def grab_frame(stream):             # -> only for built-in camera video stream and IP cameras
+    start = time.time()
     ret, frame = stream.read()
+    end = time.time()
+
+    elapsed_time = end - start
        
     if not ret:
         print("Error: Could not read frame.")
      
-    return frame
+    return frame, elapsed_time
+
 
 
 
@@ -355,7 +359,6 @@ def analyze_img_manual(frame):
 
 
 
-
 class ObjectTracker:
     def __init__(self):
         self.locObjHeight = 60
@@ -372,10 +375,9 @@ class ObjectTracker:
         self.resetY = 0
         self.centerX = 0
         self.centerY = 0
-        self.Frame_receival = 0
         self.Analysis_time = 0
 
-    def analyze_img(self, frame, frame_receival, display_speed):
+    def analyze_img(self, frame, draw_speed):
         start = time.time()
 
         if self.initial_run:
@@ -393,11 +395,26 @@ class ObjectTracker:
             else:
                 self.locObjX, self.locObjY = max_loc
 
+
+        ###### Sending output to the database (self.locObjX, self.locObjY)
+
+        update_query = "UPDATE rtvirtualiovalue SET actualValue = %s WHERE iocFunId = %s AND iocFunIOIndex = %s"
+        
+        values_x = (str(self.locObjX - self.startX), str(2200), str(0))
+        values_y = (str(self.locObjY - self.startY), str(2200), str(1))
+
+        self.cursor.execute(update_query, values_x)
+        self.cursor.execute(update_query, values_y)
+
+        self.connection.commit()
+
+
+
+
         end = time.time()
         analysis_time = end - start
 
-        if display_speed:
-            self.Frame_receival = frame_receival
+        if draw_speed: 
             self.Analysis_time = analysis_time
 
 
@@ -410,7 +427,6 @@ class ObjectTracker:
         posS = f'[{int(self.locObjX - self.startX)}; {int(self.locObjY - self.startY)}]'
         (text_width, text_height), baseline = cv2.getTextSize(posS, font, font_scale, font_thickness)
         cv2.putText(frame, posS, (self.locObjX + self.locObjWidth, self.locObjY + text_height), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-        cv2.putText(frame, f'frame grab: {int(self.Frame_receival * 1000)} ms', (0, int(frame.shape[0] * 0.91)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
         cv2.putText(frame, f'analysis time: {int(self.Analysis_time * 1000)} ms', (0, int(frame.shape[0] * 0.96)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
 
         self.initial_run = False
@@ -430,42 +446,88 @@ class ObjectTracker:
 
 
 
-
 def main():
     tracker = ObjectTracker()
 
+    # Establish connection with database
+    connection = mysql.connector.connect(
+        host='localhost',          
+        user='root',      
+        password='mysqlpassword',  
+        database='dcuusercommconfig'   
+    )
+
+    # Create a cursor object to interact with the database
+    cursor = connection.cursor()
+    tracker.connection = connection
+    tracker.cursor = cursor
+
+    
+    # Open the integrated camera video stream
     cap = cv2.VideoCapture(0)
     cv2.namedWindow("Camera Stream")
     cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
 
     beginning = True
     running = True
-    display_speed = False
+    draw_speed = False
+    Frame_receival_speed = 0
     display_START = time.time()
 
-    while running:
 
+
+
+    while running:
+        
+        # frame speed displaying regulations
         display_END = time.time()
         if (display_END - display_START) >= 1:
-            display_speed = True
+            draw_speed = True
             display_START = time.time()
 
-        start = time.time()
-        frame = grab_frame(cap)
-        end = time.time()
-        frame_receival = end - start
 
-        if beginning:
-            tracker.setup(frame)
-            beginning = False
+        frame, frame_receival_speed = grab_frame(cap)
 
-        tracker.analyze_img(frame, frame_receival, display_speed)
+        
+        # READING input from database
 
-        display_speed = False
+        # Step 1: Write a query to fetch the 4th column where 1st column = 1200 and 3rd column = 0
+        query = "SELECT actualValue FROM rtvirtualiovalue WHERE iocFunId = %s AND iocFunIOIndex = %s LIMIT 1"
 
+        # Step 2: Set the values for the placeholders (1200 for column_1 and 0 for column_3)
+        values = (1200, 0)
+
+        # Step 3: Execute the query
+        cursor.execute(query, values)
+        
+        # Step 4: Retrieve the tuple value
+        signal = cursor.fetchone()
+    
+
+        if signal[0] == "1.0":
+            if beginning:
+                tracker.setup(frame)
+                beginning = False
+
+            tracker.analyze_img(frame, draw_speed)
+        
+        else:
+            beginning = True
+
+
+        
+        
+        # displays the frame and elapsed time of grabing a frame 
+        if draw_speed:
+            Frame_receival_speed = frame_receival_speed
+        
+        cv2.putText(frame, f'frame grab: {int(Frame_receival_speed * 1000)} ms', (0, int(frame.shape[0] * 0.91)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1, lineType=cv2.LINE_AA)
         cv2.imshow("Camera Stream", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             running = False
+
+        draw_speed = False
+
 
     cap.release()
     cv2.destroyAllWindows()
