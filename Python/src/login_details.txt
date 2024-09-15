@@ -1,0 +1,5 @@
+host=
+user=
+password=
+database=
+ip_camera_url=
