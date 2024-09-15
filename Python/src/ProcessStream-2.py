@@ -455,12 +455,16 @@ class ObjectTracker:
 def main():
     tracker = ObjectTracker()
 
+    with open('Python\src\login_details.txt', 'r') as file:
+        content = file.read()
+        content = content.split('\n')
+
     # Establish connection with database
     connection = mysql.connector.connect(
-        host='localhost',          
-        user='root',      
-        password='mysqlpassword',  
-        database='dcuusercommconfig'   
+        host=content[0].split('=',1)[1],          
+        user=content[1].split('=',1)[1],      
+        password=content[2].split('=',1)[1],  
+        database=content[3].split('=',1)[1]    
     )
 
     # Create a cursor object to interact with the database
@@ -468,9 +472,13 @@ def main():
     tracker.connection = connection
     tracker.cursor = cursor
 
+    # Open the IP video stream
+    rtsp_url = content[4].split('=',1)[1]
+    cap = cv2.VideoCapture(rtsp_url)
+
     
     # Open the integrated camera video stream
-    cap = cv2.VideoCapture(0)
+    #cap = cv2.VideoCapture(0)
     cv2.namedWindow("Camera Stream")
     cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
 
