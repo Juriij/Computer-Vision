@@ -3,7 +3,7 @@ import time
 import numpy as np
 import cupy as cp
 import mysql.connector
-
+from statistics import mean
 
 # Functions
 
@@ -375,9 +375,11 @@ class ObjectTracker:
         self.resetY = 0
         self.centerX = 0
         self.centerY = 0
-        self.Analysis_time = 0
+        self.samples_analysis = []
+        self.avg_frame = 0
+        self.max_frame = 0
 
-    def analyze_img(self, frame, draw_speed):
+    def analyze_img(self, frame, draw_analysisspeed_counter):
         start = time.time()
 
         if self.initial_run:
@@ -412,10 +414,14 @@ class ObjectTracker:
 
 
         end = time.time()
-        analysis_time = end - start
 
-        if draw_speed: 
-            self.Analysis_time = analysis_time
+        analysis_time = end - start
+        self.samples_analysis.append(analysis_time)
+
+        if draw_analysisspeed_counter % 20 == 0: 
+            self.avg_frame = mean(self.samples_analysis)
+            self.max_frame = max(self.samples_analysis)
+            self.samples_analysis = []
 
 
         yellow = (0, 255, 255)
@@ -427,7 +433,7 @@ class ObjectTracker:
         posS = f'[{int(self.locObjX - self.startX)}; {int(self.locObjY - self.startY)}]'
         (text_width, text_height), baseline = cv2.getTextSize(posS, font, font_scale, font_thickness)
         cv2.putText(frame, posS, (self.locObjX + self.locObjWidth, self.locObjY + text_height), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
-        cv2.putText(frame, f'analysis time: {int(self.Analysis_time * 1000)} ms', (0, int(frame.shape[0] * 0.96)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
+        cv2.putText(frame, f'analysis time: average{int(self.avg_frame*1000)}ms  max{int(self.max_frame*1000)}ms', (0, int(frame.shape[0] * 0.96)), font, font_scale, yellow, font_thickness, lineType=cv2.LINE_AA)
 
         self.initial_run = False
 
@@ -470,25 +476,20 @@ def main():
 
     beginning = True
     running = True
-    draw_speed = False
-    Frame_receival_speed = 0
-    display_START = time.time()
-
+    draw_analysisspeed_counter = 0
+    draw_framespeed_counter = 0
+    samples_frame_grab = []
+    max_frame = 0
+    avg_frame = 0
 
 
 
     while running:
-        
-        # frame speed displaying regulations
-        display_END = time.time()
-        if (display_END - display_START) >= 1:
-            draw_speed = True
-            display_START = time.time()
-
-
+        # grabs a frame
         frame, frame_receival_speed = grab_frame(cap)
+        draw_framespeed_counter = draw_framespeed_counter + 1
+        samples_frame_grab.append(frame_receival_speed)
 
-        
         # READING input from database
 
         # Step 1: Write a query to fetch the 4th column where 1st column = 1200 and 3rd column = 0
@@ -508,25 +509,27 @@ def main():
             if beginning:
                 tracker.setup(frame)
                 beginning = False
-
-            tracker.analyze_img(frame, draw_speed)
+            
+            draw_analysisspeed_counter += 1 
+            tracker.analyze_img(frame, draw_analysisspeed_counter)
         
         else:
+            draw_analysisspeed_counter = 0
             beginning = True
 
 
         
-        
         # displays the frame and elapsed time of grabing a frame 
-        if draw_speed:
-            Frame_receival_speed = frame_receival_speed
+        if draw_framespeed_counter % 20 == 0: 
+            avg_frame = mean(samples_frame_grab)
+            max_frame = max(samples_frame_grab)
+            samples_frame_grab = []
+
         
-        cv2.putText(frame, f'frame grab: {int(Frame_receival_speed * 1000)} ms', (0, int(frame.shape[0] * 0.91)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1, lineType=cv2.LINE_AA)
+        cv2.putText(frame, f'frame grab: average{int(avg_frame*1000)}ms  max{int(max_frame*1000)}ms', (0, int(frame.shape[0] * 0.91)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1, lineType=cv2.LINE_AA)
         cv2.imshow("Camera Stream", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             running = False
-
-        draw_speed = False
 
 
     cap.release()
