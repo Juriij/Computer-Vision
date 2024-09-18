@@ -519,36 +519,40 @@ def main():
     window.login_details()
     tracker = ObjectTracker()
 
-    # Establish connection with database
-    connection = mysql.connector.connect(
-        host=window.mysql_host,          
-        user=window.mysql_user,      
-        password=window.mysql_password,  
-        database=window.mysql_database   
-    )
+    try:
+        # Establish connection with database
+        connection = mysql.connector.connect(
+            host=window.mysql_host,          
+            user=window.mysql_user,      
+            password=window.mysql_password,  
+            database=window.mysql_database   
+        )
 
-    # Create a cursor object to interact with the database
-    cursor = connection.cursor()
-    tracker.connection = connection
-    tracker.cursor = cursor
+        # Create a cursor object to interact with the database
+        cursor = connection.cursor()
+        tracker.connection = connection
+        tracker.cursor = cursor
 
-    # Open the IP video stream
-    rtsp_url = window.camera_url
-    cap = cv2.VideoCapture(rtsp_url)
+        # Open the IP video stream
+        rtsp_url = window.camera_url
+        cap = cv2.VideoCapture(rtsp_url)
 
+        
+        # Open the integrated camera video stream
+        #cap = cv2.VideoCapture(0)
+        cv2.namedWindow("Camera Stream")
+        cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
+
+        beginning = True
+        running = True
+        draw_analysisspeed_counter = 0
+        draw_framespeed_counter = 0
+        samples_frame_grab = []
+        max_frame = 0
+        avg_frame = 0
     
-    # Open the integrated camera video stream
-    #cap = cv2.VideoCapture(0)
-    cv2.namedWindow("Camera Stream")
-    cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
-
-    beginning = True
-    running = True
-    draw_analysisspeed_counter = 0
-    draw_framespeed_counter = 0
-    samples_frame_grab = []
-    max_frame = 0
-    avg_frame = 0
+    except:
+        main()
 
 
 
