@@ -515,17 +515,17 @@ class LoginDetailsWindow:
 
 
 def main():
-    window = LoginDetailsWindow()
-    window.login_details()
+    login_details = LoginDetailsWindow()
+    login_details.login_details()
     tracker = ObjectTracker()
 
     try:
         # Establish connection with database
         connection = mysql.connector.connect(
-            host=window.mysql_host,          
-            user=window.mysql_user,      
-            password=window.mysql_password,  
-            database=window.mysql_database   
+            host=login_details.mysql_host,          
+            user=login_details.mysql_user,      
+            password=login_details.mysql_password,  
+            database=login_details.mysql_database   
         )
 
         # Create a cursor object to interact with the database
@@ -534,7 +534,7 @@ def main():
         tracker.cursor = cursor
 
         # Open the IP video stream
-        rtsp_url = window.camera_url
+        rtsp_url = login_details.camera_url
         cap = cv2.VideoCapture(rtsp_url)
 
         
@@ -552,6 +552,7 @@ def main():
         avg_frame = 0
     
     except:
+        login_details.window.quit()
         main()
 
 
