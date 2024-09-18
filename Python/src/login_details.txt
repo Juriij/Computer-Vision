@@ -1,5 +1,0 @@
-host=localhost
-user=root
-password=mysqlpassword
-database=dcuusercommconfig
-ip_camera_url=rtsp://admin:Bitnami0@10.0.0.64/h264_stream
