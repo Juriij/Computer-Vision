@@ -553,8 +553,6 @@ def main():
         avg_frame = 0
     
     except:
-        win.window.destroy()
-        win.window.quit()
         main()
 
 
