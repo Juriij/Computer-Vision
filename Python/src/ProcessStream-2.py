@@ -475,6 +475,7 @@ class LoginDetailsWindow:
             messagebox.showerror("Input Error", "All the fields have to be filled!")
             
         else:
+            self.window.destroy()
             self.window.quit()  # Close the window after successful submission
 
     #Disable the close button (X button) to enforce validation
@@ -515,17 +516,17 @@ class LoginDetailsWindow:
 
 
 def main():
-    login_details = LoginDetailsWindow()
-    login_details.login_details()
+    win = LoginDetailsWindow()
+    win.login_details()
     tracker = ObjectTracker()
 
     try:
         # Establish connection with database
         connection = mysql.connector.connect(
-            host=login_details.mysql_host,          
-            user=login_details.mysql_user,      
-            password=login_details.mysql_password,  
-            database=login_details.mysql_database   
+            host=win.mysql_host,          
+            user=win.mysql_user,      
+            password=win.mysql_password,  
+            database=win.mysql_database   
         )
 
         # Create a cursor object to interact with the database
@@ -534,7 +535,7 @@ def main():
         tracker.cursor = cursor
 
         # Open the IP video stream
-        rtsp_url = login_details.camera_url
+        rtsp_url = win.camera_url
         cap = cv2.VideoCapture(rtsp_url)
 
         
@@ -552,7 +553,8 @@ def main():
         avg_frame = 0
     
     except:
-        login_details.window.quit()
+        win.window.destroy()
+        win.window.quit()
         main()
 
 

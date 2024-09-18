@@ -22,6 +22,7 @@ class LoginDetailsWindow:
             messagebox.showerror("Input Error", "All the fields have to be filled!")
             
         else:
+            self.window.destroy()
             self.window.quit()  # Close the window after successful submission
 
     #Disable the close button (X button) to enforce validation
@@ -61,6 +62,7 @@ class LoginDetailsWindow:
         self.window.mainloop()
 
 def func(host):
+
     print(host)
 
 obj = LoginDetailsWindow()
