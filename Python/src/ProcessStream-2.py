@@ -187,51 +187,42 @@ class LoginDetailsWindow:
         return self.close
 
 
-def main():
-    win = LoginDetailsWindow()
-    close = win.login_details()
-    tracker = ObjectTracker()
 
-    try:
-        # Establish connection with database
-        connection = mysql.connector.connect(
-            host=win.mysql_host,          
-            user=win.mysql_user,      
-            password=win.mysql_password,  
-            database=win.mysql_database   
-        )
 
-        # Create a cursor object to interact with the database
-        cursor = connection.cursor()
-        tracker.connection = connection
-        tracker.cursor = cursor
 
-        # Open the IP video stream
-        rtsp_url = win.camera_url
-        #cap = cv2.VideoCapture(rtsp_url)
 
-        
-        # Open the integrated camera video stream
-        cap = cv2.VideoCapture(0)
-        cv2.namedWindow("Camera Stream")
-        cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
+def video_stream(win, tracker, close):
+    # Establish connection with database
+    connection = mysql.connector.connect(
+        host=win.mysql_host,          
+        user=win.mysql_user,      
+        password=win.mysql_password,  
+        database=win.mysql_database   
+    )
 
-        beginning = True
-        running = True
-        draw_analysisspeed_counter = 0
-        draw_framespeed_counter = 0
-        samples_frame_grab = []
-        max_frame = 0
-        avg_frame = 0
+    # Create a cursor object to interact with the database
+    cursor = connection.cursor()
+    tracker.connection = connection
+    tracker.cursor = cursor
+
+    # Open the IP video stream
+    rtsp_url = win.camera_url
+    #cap = cv2.VideoCapture(rtsp_url)
+
+    # Open the integrated camera video stream
+    cap = cv2.VideoCapture(0)
+
+    cv2.namedWindow("Camera Stream")
+    cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
     
-    except:
-        if close:
-            running = False
-        else:
-            main()
-
-
-
+    beginning = True
+    running = True
+    draw_analysisspeed_counter = 0
+    draw_framespeed_counter = 0
+    samples_frame_grab = []
+    max_frame = 0
+    avg_frame = 0
+    
     while running:
         # grabs a frame
         frame, frame_receival_speed = grab_frame(cap)
@@ -287,6 +278,39 @@ def main():
     if not close:
         cap.release()
         cv2.destroyAllWindows()
+
+
+
+
+        
+    
+
+
+
+def main():
+    global wrong_input
+    tracker = ObjectTracker()
+
+    while wrong_input:
+        win = LoginDetailsWindow()
+        close = win.login_details()
+
+        try:
+            video_stream(win, tracker, close)
+            wrong_input = False
+        
+        except:
+            if close:
+               wrong_input = False
+
+            else:
+                messagebox.showerror("Input Error", "Invalid login details")
+
+
+
+
+
+wrong_input = True
 
 if __name__ == "__main__":
     main()
