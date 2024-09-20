@@ -118,6 +118,7 @@ class LoginDetailsWindow:
         self.window = tk.Tk()
         self.window.title("MySQL and IP Camera Setup")
         self.window.geometry("350x250")
+        self.close = False
 
 
     def submit(self):
@@ -136,9 +137,16 @@ class LoginDetailsWindow:
             self.window.destroy()
             self.window.quit()  # Close the window after successful submission
 
-    #Disable the close button (X button) to enforce validation
     def on_closing(self):
-        messagebox.showwarning("Warning", "Please complete all fields before closing.")
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.window.destroy()
+            self.window.quit()
+            self.close = True
+        else:
+            self.close = False
+
+    
+
 
 
 
@@ -169,13 +177,19 @@ class LoginDetailsWindow:
         ok_button = tk.Button(self.window, text="OK", command=self.submit)
         ok_button.grid(row=5, columnspan=2, pady=20)
 
+        self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
+        
+
+        
+
     # Start the Tkinter event loop
         self.window.mainloop()
+        return self.close
 
 
 def main():
     win = LoginDetailsWindow()
-    win.login_details()
+    close = win.login_details()
     tracker = ObjectTracker()
 
     try:
@@ -194,11 +208,11 @@ def main():
 
         # Open the IP video stream
         rtsp_url = win.camera_url
-        cap = cv2.VideoCapture(rtsp_url)
+        #cap = cv2.VideoCapture(rtsp_url)
 
         
         # Open the integrated camera video stream
-        #cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(0)
         cv2.namedWindow("Camera Stream")
         cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
 
@@ -211,7 +225,10 @@ def main():
         avg_frame = 0
     
     except:
-        main()
+        if close:
+            running = False
+        else:
+            main()
 
 
 
@@ -259,12 +276,17 @@ def main():
         
         cv2.putText(frame, f'frame grab: average{int(avg_frame*1000)}ms  max{int(max_frame*1000)}ms', (0, int(frame.shape[0] * 0.91)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1, lineType=cv2.LINE_AA)
         cv2.imshow("Camera Stream", frame)
+
+        keyCode = cv2.waitKey(1)
+        if cv2.getWindowProperty("Camera Stream", cv2.WND_PROP_VISIBLE) <1:
+            running = False
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             running = False
 
-
-    cap.release()
-    cv2.destroyAllWindows()
+    if not close:
+        cap.release()
+        cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
