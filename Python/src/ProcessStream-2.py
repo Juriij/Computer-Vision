@@ -5,22 +5,6 @@ from statistics import mean
 import tkinter as tk
 from tkinter import messagebox
 
-# Functions
-
-def grab_frame(stream):             # -> only for built-in camera video stream and IP cameras
-    start = time.time()
-    ret, frame = stream.read()
-    end = time.time()
-
-    elapsed_time = end - start
-       
-    if not ret:
-        print("Error: Could not read frame.")
-     
-    return frame, elapsed_time
-
-
-
 class ObjectTracker:
     def __init__(self):
         self.locObjHeight = 60
@@ -102,7 +86,6 @@ class ObjectTracker:
 
     def set_click_coords(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
-            print(f'x,y deviation from the center of the screen: [{x - self.centerX}; {y - self.centerY}]')
             self.initial_run = True
             self.resetX = x
             self.resetY = y
@@ -148,9 +131,6 @@ class LoginDetailsWindow:
     
 
 
-
-
-
     def login_details(self):
         #Create labels and entry fields
         tk.Label(self.window, text="MySQL Host:").grid(row=0, column=0, padx=10, pady=5, sticky="e")
@@ -188,6 +168,17 @@ class LoginDetailsWindow:
 
 
 
+# Functions
+
+def grab_frame(stream):             # -> only for built-in camera video stream and IP cameras
+    start = time.time()
+    ret, frame = stream.read()
+    end = time.time()
+
+    elapsed_time = end - start
+       
+     
+    return frame, elapsed_time
 
 
 
@@ -207,10 +198,10 @@ def video_stream(win, tracker, close):
 
     # Open the IP video stream
     rtsp_url = win.camera_url
-    #cap = cv2.VideoCapture(rtsp_url)
-
+    cap = cv2.VideoCapture(rtsp_url)
+    
     # Open the integrated camera video stream
-    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture(0)
 
     cv2.namedWindow("Camera Stream")
     cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
