@@ -107,6 +107,8 @@ class LoginDetailsWindow:
         self.window.geometry("350x250")
         self.close = False
 
+        
+
 
     def submit(self):
         # Fetch the data from the entry fields
@@ -201,10 +203,10 @@ def video_stream(win, tracker, close):
 
     # Open the IP video stream
     rtsp_url = win.camera_url
-    cap = cv2.VideoCapture(rtsp_url)
+    #cap = cv2.VideoCapture(rtsp_url)
     
     # Open the integrated camera video stream
-    # cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0)
 
     cv2.namedWindow("Camera Stream")
     cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
