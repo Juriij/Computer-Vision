@@ -40,7 +40,7 @@ class ObjectTracker:
             self.deviationX = 0 
             self.deviationY = 0
             self.locObjImage = frame[self.locObjY:self.locObjY + self.locObjHeight, self.locObjX:self.locObjX + self.locObjWidth]
-        
+       
         # Scans the image and tracks the given point
         else:
             result = cv2.matchTemplate(frame, self.locObjImage, self.match_method)
