@@ -296,12 +296,12 @@ def main():
             video_stream(win, tracker, close)
             run = False
         
-        except:
+        except Exception as error:
             if close:
                run = False
 
             else:
-                messagebox.showerror("Input Error", "Invalid login details")
+                messagebox.showerror("Error Description", error)
 
 
 
