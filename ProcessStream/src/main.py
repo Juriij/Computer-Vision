@@ -178,6 +178,9 @@ def grab_frame(stream):             # -> built for cv2.VideoCapture()
     ret, frame = stream.read()
     end = time.time()
 
+    # frame resize 
+    frame = cv2.resize(frame, (608,608))
+
     elapsed_time = end - start
         
     return frame, elapsed_time
@@ -308,4 +311,4 @@ def main():
 run = True
 
 if __name__ == "__main__":
-    main()
+     main()
