@@ -4,6 +4,8 @@ import mysql.connector
 from statistics import mean
 import tkinter as tk
 from tkinter import messagebox
+import ffmpeg
+import numpy as np
 
 
 # Classes
@@ -171,20 +173,6 @@ class LoginDetailsWindow:
 
 
 
-# Functions
-
-def grab_frame(stream):             # -> built for cv2.VideoCapture()
-    start = time.time()
-    ret, frame = stream.read()
-    end = time.time()
-
-    # frame resize 
-    frame = cv2.resize(frame, (608,608))
-
-    elapsed_time = end - start
-        
-    return frame, elapsed_time
-
 
 # Loop that runs the video stream
 def video_stream(win, tracker, close):
@@ -202,15 +190,9 @@ def video_stream(win, tracker, close):
     tracker.connection = connection
     tracker.cursor = cursor
 
-    # Open the IP video stream
-    rtsp_url = win.camera_url
-    cap = cv2.VideoCapture(rtsp_url)
-    
-    # Open the integrated camera video stream
-    #cap = cv2.VideoCapture(0)
-
     cv2.namedWindow("Camera Stream")
     cv2.setMouseCallback("Camera Stream", tracker.set_click_coords)
+
     
     beginning = True
     running = True
@@ -219,10 +201,32 @@ def video_stream(win, tracker, close):
     samples_frame_grab = []
     max_frame = 0
     avg_frame = 0
-    
+    rtsp_url = win.camera_url
+    frame_width = 640
+    frame_height = 480
+
+    # reads the frames from the rtsp stream using ffmpeg
+    process = (
+        ffmpeg
+        .input(rtsp_url, rtsp_transport='tcp', f='rtsp', fflags='nobuffer', threads=1)
+        .output('pipe:', format='rawvideo', pix_fmt='bgr24', s=f'{frame_width}x{frame_height}')
+        .run_async(pipe_stdout=True)
+    )
+
+
     while running:
-        # Grabs a frame
-        frame, frame_receival_speed = grab_frame(cap)
+
+        start = time.time()
+        in_bytes = process.stdout.read(frame_width * frame_height * 3) 
+        end = time.time()
+        frame_receival_speed = end - start
+
+        if not in_bytes:
+            break
+        frame = np.frombuffer(in_bytes, np.uint8).reshape([frame_height, frame_width, 3]).copy()
+
+
+
         draw_framespeed_counter = draw_framespeed_counter + 1
         samples_frame_grab.append(frame_receival_speed)
 
@@ -279,7 +283,6 @@ def video_stream(win, tracker, close):
             running = False
 
     if not close:
-        cap.release()
         cv2.destroyAllWindows()
 
 
