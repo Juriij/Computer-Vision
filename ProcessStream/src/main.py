@@ -88,6 +88,7 @@ class ObjectTracker:
 
         self.initial_run = False
 
+
     # Sesets the point to follow, based on a mouse click
     def set_click_coords(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -208,22 +209,31 @@ def video_stream(win, tracker, close):
     # reads the frames from the rtsp stream using ffmpeg
     process = (
         ffmpeg
-        .input(rtsp_url, rtsp_transport='tcp', f='rtsp', fflags='nobuffer', threads=1)
+        .input(rtsp_url, rtsp_transport='tcp', f='rtsp', fflags='nobuffer', threads=1)      
         .output('pipe:', format='rawvideo', pix_fmt='bgr24', s=f'{frame_width}x{frame_height}')
         .run_async(pipe_stdout=True)
     )
 
 
+
     while running:
 
         start = time.time()
-        in_bytes = process.stdout.read(frame_width * frame_height * 3) 
-        end = time.time()
-        frame_receival_speed = end - start
 
+
+        # Read and discard stale frames
+        for _ in range(2):  # number of stale frames to discard
+            in_bytes = process.stdout.read(frame_width * frame_height * 3)
+
+
+
+        in_bytes = process.stdout.read(frame_width * frame_height * 3) 
         if not in_bytes:
             break
         frame = np.frombuffer(in_bytes, np.uint8).reshape([frame_height, frame_width, 3]).copy()
+
+        end = time.time()
+        frame_receival_speed = end - start
 
 
 
