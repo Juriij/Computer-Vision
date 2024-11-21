@@ -203,6 +203,9 @@ def video_stream(win, tracker, close):
     max_frame = 0
     avg_frame = 0
     rtsp_url = win.camera_url
+
+    # if the image resolution is increased, the fps may need to be lowered 
+    # to avoid delays in real-time stream
     frame_width = 640
     frame_height = 480
     fps = 15
