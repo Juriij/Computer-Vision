@@ -205,12 +205,13 @@ def video_stream(win, tracker, close):
     rtsp_url = win.camera_url
     frame_width = 640
     frame_height = 480
+    fps = 15
 
     # reads the frames from the rtsp stream using ffmpeg
     process = (
         ffmpeg
         .input(rtsp_url, rtsp_transport='tcp', f='rtsp', fflags='nobuffer', threads=1)      
-        .output('pipe:', format='rawvideo', pix_fmt='bgr24', s=f'{frame_width}x{frame_height}')
+        .output('pipe:', format='rawvideo', pix_fmt='bgr24', r=fps, s=f'{frame_width}x{frame_height}')
         .run_async(pipe_stdout=True)
     )
 
@@ -219,13 +220,6 @@ def video_stream(win, tracker, close):
     while running:
 
         start = time.time()
-
-
-        # Read and discard stale frames
-        for _ in range(2):  # number of stale frames to discard
-            in_bytes = process.stdout.read(frame_width * frame_height * 3)
-
-
 
         in_bytes = process.stdout.read(frame_width * frame_height * 3) 
         if not in_bytes:
