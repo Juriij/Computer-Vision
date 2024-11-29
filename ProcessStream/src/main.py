@@ -206,6 +206,10 @@ def video_stream(win, tracker, close):
 
     # if the image resolution is increased, the fps may need to be lowered 
     # to avoid delays in real-time stream
+    # original resolution:
+    # frame_width = 1280
+    # frame_height = 720
+
     frame_width = 640
     frame_height = 480
     fps = 15
@@ -213,7 +217,7 @@ def video_stream(win, tracker, close):
     # reads the frames from the rtsp stream using ffmpeg
     process = (
         ffmpeg
-        .input(rtsp_url, rtsp_transport='tcp', f='rtsp', fflags='nobuffer', threads=1)      
+        .input(rtsp_url, rtsp_transport='udp', f='rtsp', fflags='nobuffer', threads=1)      
         .output('pipe:', format='rawvideo', pix_fmt='bgr24', r=fps, s=f'{frame_width}x{frame_height}')
         .run_async(pipe_stdout=True)
     )
