@@ -55,8 +55,8 @@ class ObjectTracker:
 
         # Sending output to the database (self.locObjX, self.locObjY)
         update_query = "UPDATE rtvirtualiovalue SET actualValue = %s WHERE iocFunId = %s AND iocFunIOIndex = %s"     
-        values_x = (str(self.locObjX - self.startX), str(2200), str(0))
-        values_y = (str(self.locObjY - self.startY), str(2200), str(1))
+        values_x = (str(self.locObjX - self.startX), str(1200), str(0))
+        values_y = (str(self.locObjY - self.startY), str(1200), str(1))
         self.cursor.execute(update_query, values_x)
         self.cursor.execute(update_query, values_y)
         self.connection.commit()
@@ -244,11 +244,11 @@ def video_stream(win, tracker, close):
 
         # READING input from database
 
-        # Step 1: Write a query to fetch the 4th column where 1st column = 1200 and 3rd column = 0
+        # Step 1: Write a query to fetch the 4th column where 1st column = 2200 and 3rd column = 0
         query = "SELECT actualValue FROM rtvirtualiovalue WHERE iocFunId = %s AND iocFunIOIndex = %s LIMIT 1"
 
-        # Step 2: Set the values for the placeholders (1200 for column_1 and 0 for column_3)
-        values = (1200, 0)
+        # Step 2: Set the values for the placeholders (2200 for column_1 and 0 for column_3)
+        values = (2200, 0)
 
         # Step 3: Execute the query
         cursor.execute(query, values)
